@@ -20,9 +20,12 @@ const get = async (req,res)=>{
 }
 
 const post =async (req,res)=>{
-    let {title,description}= req.body;
+    let {title,description,image}= req.body;
+    if(!image){
+      image="";
+    }
     try {
-        let data =  await client.query("INSERT INTO  product_schema.product (title,description) values ($1,$2)",[title,description]);
+        let data =  await client.query("INSERT INTO  product_schema.product (title,description,image) values ($1,$2,$3)",[title,description,image]);
         return res.status(200).json(data);
      }catch (error) {
         return res.status(400).send("error");  
@@ -31,10 +34,12 @@ const post =async (req,res)=>{
 
 const put =async (req,res)=>{
 
-   let {id,title,description}= req.body;
-
+   let {id,title,description,image}= req.body;
+   if(!image){
+      image="";
+   }
    try {
-       let data =  await client.query("UPDATE product_schema.product set title=$1,description=$2 where id=$3",[title,description,id]);
+       let data =  await client.query("UPDATE product_schema.product set title=$1,description=$2,image=$3 where id=$4",[title,description,image,id]);
        return res.status(200).json(data);
     }catch (error) {
        return res.status(400).send("error");  

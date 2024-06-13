@@ -1,7 +1,7 @@
-// geting router
-const express  = require("express");
-const productRouter =  express.Router();
-// get ing controller
+// getting router
+const productRouter =  require("express").Router();
+
+// getting controller
 const { get, post, put, del } = require("../controller/productsController");
 
 productRouter.get("/:id?",get);
