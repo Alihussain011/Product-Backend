@@ -1,5 +1,6 @@
 const client = require("../db/db");
 const jwt = require("jsonwebtoken");
+const {getPasswordOfUserName} = require("../modal/loginModel");
 
 const get = (req, res) => {
     res.send("welcome");
@@ -10,7 +11,7 @@ const post = async (req, res) => {
     if (req.token) { 
         jwt.verify(req.token,process.env.SECRETKEY,(err,authData)=>{
             if(err){
-                return res.status(400).send(err);
+                return res.status(401).send(err);
             }
             return res.send(authData);
         })
@@ -19,23 +20,21 @@ const post = async (req, res) => {
         const { username, password } = req.body;
 
         if (!username || !password) return res.status(400).send("Please provide all require fields");
+        
+        let result =await getPasswordOfUserName(username);
+    
+        if(result.error) return res.status(500).send("sql error");
+        
+        if (result.rows.length == 0) return res.status(400).send("username not found");
 
-        try {
-            let result = await client.query("select password from product_schema.user where username = $1", [username]);
-
-            if (result.rows.length == 0) return res.status(400).send("username not found");
-
-            if (result.rows[0].password != password) return res.status(400).send("Invalid password");
-            jwt.sign({ username, password }, process.env.SECRETKEY, { expiresIn: "60s" },(err,token)=>{
-                if(err){
-                    return res.status(400).send(err);
-                }
-                
-                return res.send(token);
-            })
-        } catch (error) {
-            return res.status(400).send(error);
-        }
+        if (result.rows[0].password != password) return res.status(401).send("Invalid password");
+        jwt.sign({ username, password }, process.env.SECRETKEY, { expiresIn: "600s" },(err,token)=>{
+            if(err){
+                return res.status(400).send(err);
+            }
+            
+            return res.send(token);
+        })
     }
 }
 
